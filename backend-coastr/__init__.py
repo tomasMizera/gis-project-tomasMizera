@@ -1,10 +1,10 @@
 from flask import Flask
+
 import os
 
 
 def create_app(_test_config=None):
-    
-    #create application
+    # create application
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev'
@@ -28,4 +28,3 @@ def create_app(_test_config=None):
         return "Hi, structured project!"
 
     return app
-

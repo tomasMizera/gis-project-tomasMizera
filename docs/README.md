@@ -18,9 +18,9 @@ Build a map-based application, which lets the user see geo-based data on a map a
 
 ## My project
 
-Fill in (either in English, or in Slovak):
+Fill in (either in English, or in Slovak): **Coastr**
 
-**Application description**: `<fill in>`
+**Application description**: `Find places on coast where you can enjoy sunset on open sea`
 
 **Data source**: `<fill in>`
 
