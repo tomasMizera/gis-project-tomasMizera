@@ -1,7 +1,2 @@
-import os
-basedir = os.path.abspath(os.path.dirname(__file__))
+# config for development
 
-
-class DevelopmentConfig():
-    DEVELOPMENT = True
-    DEBUG = True
