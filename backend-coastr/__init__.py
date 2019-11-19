@@ -51,7 +51,7 @@ def create_app():
 app = create_app()
 
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def hello_world():
     logger.debug('Serving home response')
     return render_template('home.html')
@@ -59,9 +59,29 @@ def hello_world():
     # f'SELECT * FROM planet_osm_polygon where name=').first()[0]
 
 
-@app.route('/get_view_locations')
+@app.route('/get_view_locations', methods=['GET'])
 def get_view_locations():
-    return jsonify(ok=True)
+
+    points = [
+        {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': "Point",
+                'coordinates': [13.854227716549076, 44.87547164896307]
+            }
+        },
+        {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': "Point",
+                'coordinates': [13.588997396902641, 45.30831073392483]
+            }
+        }
+    ]
+
+    return jsonify(points)
 
 
 if __name__ == '__main__':

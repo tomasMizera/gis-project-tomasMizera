@@ -24,6 +24,47 @@
             // e.lngLat is the longitude, latitude geographical position of the event
             JSON.stringify(e.lngLat.wrap());
         });
+
+        map.on("load", function () {
+            /* Image: An image is loaded and added to the map. */
+            map.loadImage("https://i.imgur.com/MK4NUzI.png", function (error, image) {
+                if (error) throw error;
+                map.addImage("custom-marker", image);
+                /* Style layer: A style layer ties together the source and image and specifies how they are displayed on the map. */
+                map.addLayer({
+                    id: "markers",
+                    type: "symbol",
+                    /* Source: A data source specifies the geographic coordinate where the image marker gets placed. */
+                    source: {
+                        type: "geojson",
+                        data: {
+                            type: 'FeatureCollection',
+                            features: [
+                                {
+                                    type: 'Feature',
+                                    properties: {},
+                                    geometry: {
+                                        type: "Point",
+                                        coordinates: [13.854227716549076, 44.87547164896307]
+                                    }
+                                },
+                                {
+                                    type: 'Feature',
+                                    properties: {},
+                                    geometry: {
+                                        type: "Point",
+                                        coordinates: [13.588997396902641, 45.30831073392483]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    layout: {
+                        "icon-image": "custom-marker",
+                    }
+                });
+            });
+        });
     </script>
     <span id="mouse"></span>
 </body>
