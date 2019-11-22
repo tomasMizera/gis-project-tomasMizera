@@ -237,7 +237,7 @@ def get_polygons():
          }} for view in coords
     ]
 
-    return jsonify(points)
+    return jsonify([points[0]])
 
 
 if __name__ == '__main__':

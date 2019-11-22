@@ -29,93 +29,115 @@
         });
 
         map.on("load", function () {
-            // let url = 'http://localhost:5000/get_view_locations';
-            // $.get(url, (data, status) => {
-
-            //     // https://i.imgur.com/MK4NUzI.png
-            //     map.loadImage("https://img.icons8.com/metro/26/000000/marker.png", function (error, image) {
-            //         if (error) throw error;
-            //         map.addImage("beaches", image);
-            //         /* Style layer: A style layer ties together the source and image and specifies how they are displayed on the map. */
-            //         map.addLayer({
-            //             id: "markers",
-            //             type: "symbol",
-            //             /* Source: A data source specifies the geographic coordinate where the image marker gets placed. */
-            //             source: {
-            //                 type: "geojson",
-            //                 data: {
-            //                     type: 'FeatureCollection',
-            //                     features: data
-            //                 }
-            //             },
-            //             layout: {
-            //                 "icon-image": "beaches",
-            //             }
-            //         });
-            //     });
-            // });
-
-            // url = 'http://localhost:5000/get_temp_view';
-            // $.get(url, (data, status) => {
-            //     map.loadImage('https://img.icons8.com/color/26/000000/marker.png', (err, img) => {
-            //         if (err) throw err;
-            //         map.addImage("temp_img_sea", img);
-            //         map.addLayer({
-            //             id: "temp-markers",
-            //             type: "symbol",
-            //             source: {
-            //                 type: "geojson",
-            //                 data: {
-            //                     type: "FeatureCollection",
-            //                     features: data
-            //                 }
-            //             },
-            //             layout: {
-            //                 "icon-image": "temp_img_sea"
-            //             }
-            //         })
-            //     })
-            // });
-
-            // url = 'http://localhost:5000/get_down_view';
-            // $.get(url, (data, status) => {
-            //     map.loadImage('https://img.icons8.com/ultraviolet/26/000000/filled-flag.png', (err, img) => {
-            //         if (err) throw err;
-            //         map.addImage("temp_img_sea_down", img);
-            //         map.addLayer({
-            //             id: "temp-markers-down",
-            //             type: "symbol",
-            //             source: {
-            //                 type: "geojson",
-            //                 data: {
-            //                     type: "FeatureCollection",
-            //                     features: data
-            //                 }
-            //             },
-            //             layout: {
-            //                 "icon-image": "temp_img_sea_down"
-            //             }
-            //         })
-            //     })
-            // });
-
-            let url = 'http://localhost:5000/get_polygons';
+            let url = 'http://localhost:5000/get_view_locations';
             $.get(url, (data, status) => {
-                console.log(data)
-                map.addLayer({
-                    'id': 'maine',
-                    'type': 'fill',
-                    'source': {
-                        'type': 'geojson',
-                        'data': data
-                    },
-                    'layout': {},
-                    'paint': {
-                        'fill-color': '#088',
-                        'fill-opacity': 0.8
-                    }
+
+                // https://i.imgur.com/MK4NUzI.png
+                map.loadImage("https://img.icons8.com/metro/26/000000/marker.png", function (error, image) {
+                    if (error) throw error;
+                    map.addImage("beaches", image);
+                    /* Style layer: A style layer ties together the source and image and specifies how they are displayed on the map. */
+                    map.addLayer({
+                        id: "markers",
+                        type: "symbol",
+                        /* Source: A data source specifies the geographic coordinate where the image marker gets placed. */
+                        source: {
+                            type: "geojson",
+                            data: {
+                                type: 'FeatureCollection',
+                                features: data
+                            }
+                        },
+                        layout: {
+                            "icon-image": "beaches",
+                        }
+                    });
                 });
             });
+
+            url = 'http://localhost:5000/get_temp_view';
+            $.get(url, (data, status) => {
+                map.loadImage('https://img.icons8.com/color/26/000000/marker.png', (err, img) => {
+                    if (err) throw err;
+                    map.addImage("temp_img_sea", img);
+                    map.addLayer({
+                        id: "temp-markers",
+                        type: "symbol",
+                        source: {
+                            type: "geojson",
+                            data: {
+                                type: "FeatureCollection",
+                                features: data
+                            }
+                        },
+                        layout: {
+                            "icon-image": "temp_img_sea"
+                        }
+                    })
+                })
+            });
+
+            url = 'http://localhost:5000/get_down_view';
+            $.get(url, (data, status) => {
+                map.loadImage('https://img.icons8.com/ultraviolet/26/000000/filled-flag.png', (err, img) => {
+                    if (err) throw err;
+                    map.addImage("temp_img_sea_down", img);
+                    map.addLayer({
+                        id: "temp-markers-down",
+                        type: "symbol",
+                        source: {
+                            type: "geojson",
+                            data: {
+                                type: "FeatureCollection",
+                                features: data
+                            }
+                        },
+                        layout: {
+                            "icon-image": "temp_img_sea_down"
+                        }
+                    })
+                })
+            });
+
+            url = 'http://localhost:5000/get_up_view';
+            $.get(url, (data, status) => {
+                map.loadImage('https://img.icons8.com/dusk/26/000000/marker.png', (err, img) => {
+                    if (err) throw err;
+                    map.addImage("temp_img_sea_up", img);
+                    map.addLayer({
+                        id: "temp-markers-up",
+                        type: "symbol",
+                        source: {
+                            type: "geojson",
+                            data: {
+                                type: "FeatureCollection",
+                                features: data
+                            }
+                        },
+                        layout: {
+                            "icon-image": "temp_img_sea_up"
+                        }
+                    })
+                })
+            });
+
+            // let url = 'http://localhost:5000/get_polygons';
+            // $.get(url, (data, status) => {
+            //     console.log(data)
+            //     map.addLayer({
+            //         'id': 'maine',
+            //         'type': 'fill',
+            //         'source': {
+            //             'type': 'geojson',
+            //             'data': data
+            //         },
+            //         'layout': {},
+            //         'paint': {
+            //             'fill-color': '#088',
+            //             'fill-opacity': 0.8
+            //         }
+            //     });
+            // });
         });
     </script>
     <span id="mouse"></span>
