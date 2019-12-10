@@ -133,5 +133,22 @@ def get_polygons():
     return jsonify(coords)
 
 
+@app.route('/get_coastline', methods=['GET'])
+def get_coastline():
+    coastlines = db.engine.execute(
+        """
+        SELECT * from planet_osm_line where "natural"='coastline'
+        UNION ALL
+        SELECT * from planet_osm_polygon where "natural"='coastline';
+        """
+    )
+
+    geo_json = {}
+    geo_json['type'] = "GeometryCollection"
+    geo_json['geometries'] = {}
+
+    geo_json['geometries'] = [coastlines]
+
+
 if __name__ == '__main__':
     app.run()

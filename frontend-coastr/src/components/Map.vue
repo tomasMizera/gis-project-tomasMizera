@@ -27,3 +27,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.mgl-map-wrapper {
+  height: 750px;
+}
+</style>
