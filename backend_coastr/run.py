@@ -148,7 +148,3 @@ def get_coastline():
     geo_json['geometries'] = {}
 
     geo_json['geometries'] = [coastlines]
-
-
-if __name__ == '__main__':
-    app.run()
