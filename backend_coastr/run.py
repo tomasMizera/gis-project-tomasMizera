@@ -2,6 +2,7 @@ import logging
 from logging.config import dictConfig
 from flask import Flask, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+import json
 
 db = SQLAlchemy()
 
@@ -155,14 +156,30 @@ def get_polygons():
 def get_coastline():
     coastlines = db.engine.execute(
         """
-        SELECT * from planet_osm_line where "natural"='coastline'
-        UNION ALL
-        SELECT * from planet_osm_polygon where "natural"='coastline';
+        with coastline as (
+            SELECT 'line' as type, *
+            from planet_osm_line
+            where "natural" = 'coastline'
+            UNION ALL
+            SELECT 'polygon' as type, *
+            from planet_osm_polygon
+            where "natural" = 'coastline'
+        )
+        select st_asgeojson(st_transform(coastline.way, 4326))
+        from coastline;
         """
     )
 
-    geo_json = {}
-    geo_json['type'] = "GeometryCollection"
-    geo_json['geometries'] = {}
+    elements = [json.loads(res[0]) for res in coastlines]
 
-    geo_json['geometries'] = [coastlines]
+    GeoJSON = {
+        'id': 'coastline',
+        'type': 'FeatureCollection',
+        'features': list(map(lambda x: {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': x
+        }, elements))
+    }
+
+    return jsonify(GeoJSON)

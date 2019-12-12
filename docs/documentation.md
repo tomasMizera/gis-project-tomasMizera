@@ -9,7 +9,9 @@
 - *we don't really care about the document length*
 - *uses links where appropriate*
 
-# Overview
+# Coastr
+
+
 
 This application shows hotels in Bratislava on a map. Most important features are:
 - search by proximity to my current location
@@ -21,7 +23,7 @@ This is it in action:
 
 ![Screenshot](screenshot.png)
 
-The application has 2 separate parts, the client which is a [frontend web application](#frontend) using mapbox API and mapbox.js and the [backend application](#backend) written in [Rails](http://rubyonrails.org/), backed by PostGIS. The frontend application communicates with backend using a [REST API](#api).
+The application has 2 separate parts, the client which is a [frontend web application](#frontend) using mapbox API and mapbox.js and the [backend application](#backend) written in [Rails](http://rubyonrails.org/), backed by PostGIS. The frontend application communicates with backend using a [REST API](#api) using GeoJSON.
 
 # Frontend
 
@@ -63,3 +65,110 @@ API calls return json responses with 2 top-level keys, `hotels` and `geojson`. `
 }
 ```
 `geojson` contains a geojson with locations of all matched hotels and style definitions.
+
+# Query examples
+
+Create views from beaches
+
+```sql
+with beaches as (
+    select name, osm_id, tags,
+           ST_X(st_astext(way)) as longitude,
+           ST_Y(st_astext(way)) as latitude
+    from planet_osm_point
+    where "natural" = 'beach'
+    union all
+    select name, osm_id, tags,
+           st_x(st_astext(st_centroid(way)))
+               as longitude,
+           st_y(st_astext(st_centroid(way)))
+               as latitude
+    from planet_osm_polygon
+    where "natural" = 'beach'
+)
+
+select name, osm_id, tags,
+       st_polygon(st_makeline(ARRAY [
+           st_point(longitude, latitude),
+           st_point(longitude - 0.057635373, latitude - 0.02385071216053),
+           st_point(longitude - 0.057635373, latitude + 0.02385071216053),
+           st_point(longitude, latitude)
+           ]), 3857) as way
+```
+
+Find intersection of views and coastline
+```sql
+
+```
+
+# Data manipulation
+
+I have created new table with gist index on way to store coastline information as:
+
+```sql
+create table spatial_coast (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name text,
+    osm_id bigint,
+    type varchar(15),
+    tags hstore,
+    way geometry(Geometry, 3857)
+);
+
+insert into spatial_coast (name, osm_id, type, tags, way)  (
+    with coastline as (
+        SELECT 'line' as type, *
+        from planet_osm_line
+        where "natural" = 'coastline'
+        UNION ALL
+        SELECT 'polygon' as type, *
+        from planet_osm_polygon
+        where "natural" = 'coastline'
+    )
+    select name, osm_id, type, tags, way
+    from coastline
+);
+
+create index way_coast_index on spatial_coast using GIST(way);
+```
+
+I created table for sights from beach as well
+
+```sql
+create table beach_view (
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name text,
+    osm_id bigint,
+    tags hstore,
+    way geometry(Geometry, 3857)
+);
+
+insert into beach_view (name, osm_id, tags, way)  (
+with beaches as (
+    select name, osm_id, tags,
+           ST_X(st_astext(way)) as longitude,
+           ST_Y(st_astext(way)) as latitude
+    from planet_osm_point
+    where "natural" = 'beach'
+    union all
+    select name, osm_id, tags,
+           st_x(st_astext(st_centroid(way)))
+               as longitude,
+           st_y(st_astext(st_centroid(way)))
+               as latitude
+    from planet_osm_polygon
+    where "natural" = 'beach'
+)
+
+select name, osm_id, tags,
+       st_polygon(st_makeline(ARRAY [
+           st_point(longitude, latitude),
+           st_point(longitude - 0.057635373, latitude - 0.02385071216053),
+           st_point(longitude - 0.057635373, latitude + 0.02385071216053),
+           st_point(longitude, latitude)
+           ]), 3857) as way
+from beaches
+);
+
+create index way_beach_index on spatial_coast using GIST(way);
+```
