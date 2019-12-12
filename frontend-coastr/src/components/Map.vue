@@ -5,6 +5,7 @@
       :mapStyle="map_defaults.map_style"
       :center="map_defaults.center"
       :zoom="map_defaults.zoom_level"
+      @load="OnMapLoaded"
     >
       <MglNavigationControl position="top-right" />
       <MglMarker :coordinates="map_layers.markers.test_point_geo" anchor="center" />
@@ -26,6 +27,7 @@ import {
   MglMarker,
   MglGeojsonLayer
 } from "vue-mapbox";
+import axios from "axios";
 
 export default {
   components: {
@@ -36,10 +38,20 @@ export default {
   },
 
   mounted() {
-    console.log(this.mapbox.Map);
+    console.log("Component mounted!");
   },
 
-  methods: {},
+  methods: {
+    OnMapLoaded(event) {
+      // console.log(event.map.getLayer);
+      // console.log(event.component.layer);
+
+      // this.mapp = event.map;
+      // this.$store.mapp = event.map;
+
+      // event.map.flyTo({center: [13.516042572916149, 45.44681239419725], zoom:9})
+    }
+  },
 
   data() {
     // LONG, LAT!
@@ -59,51 +71,36 @@ export default {
       geoJsonSource: {
         type: "geojson",
         data: {
-          id: "thisIsMySource",
           type: "FeatureCollection",
+          id: "beaches_default_layer",
           features: [
             {
               type: "Feature",
               properties: {},
               geometry: {
-                type: "Polygon",
-                coordinates: [
-                  [
-                    [13.451385498046875, 45.10357701164311],
-                    [13.250885009765625, 44.921056574907226],
-                    [13.6395263671875, 44.896741421341964],
-                    [13.726043701171875, 45.02792105147572],
-                    [13.451385498046875, 45.10357701164311]
-                  ]
-                ]
+                type: "Point",
+                coordinates: [13.9070370980641, 44.7860727950407]
               }
             },
             {
               type: "Feature",
               properties: {},
               geometry: {
-                type: "Polygon",
-                coordinates: [
-                  [
-                    [13.503570556640625, 45.24878781698633],
-                    [13.326416015624998, 45.12295984719159],
-                    [13.50494384765625, 45.03956694724904],
-                    [13.742523193359373, 45.22461173085719],
-                    [13.503570556640625, 45.24878781698633]
-                  ]
-                ]
+                type: "Point",
+                coordinates: [13.8990643980652, 44.817931095039]
               }
             }
           ]
         }
       },
       geoJsonLayer: {
-        type: "fill",
+        type: "circle",
         paint: {
-          "fill-color": "#088",
-          "fill-opacity": 0.8
+          "circle-color": "#088"
         }
-      }
+      },
+      beaches: null,
+      mapp: null
     };
   },
 
@@ -121,6 +118,3 @@ export default {
   height: 750px;
 }
 </style>
-
-
-// http://localhost:5000/get_view_locations
