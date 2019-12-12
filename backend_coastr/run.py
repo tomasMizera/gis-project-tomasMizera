@@ -15,7 +15,8 @@ conf = {
     "DEVELOPMENT": True,
     "SQLALCHEMY_DATABASE_URI":
         f'postgres://{DB_USERNAME}:{DB_PASSWORD}@localhost:5432/{DB_NAME}',
-    "SQLALCHEMY_TRACK_MODIFICATIONS": False
+    "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+    "JSON_SORT_KEYS": False
 }
 
 
@@ -49,14 +50,17 @@ def create_app():
 app = create_app()
 
 
+# ROUTES ----------------------------->
+
+
 @app.route('/', methods=['GET'])
 def hello_world():
     logger.debug('Serving home response')
     return render_template('home.html')
 
 
-@app.route('/get_view_locations', methods=['GET'])
-def get_view_locations():
+@app.route('/api/get_beaches', methods=['GET'])
+def get_beaches():
 
     beaches = db.engine.execute(
         """
@@ -77,7 +81,7 @@ def get_view_locations():
         """
     )
 
-    points = [
+    features = [
         {'type': 'Feature',
          'properties': {},
          'geometry': {
@@ -86,7 +90,13 @@ def get_view_locations():
          }} for beach in beaches
     ]
 
-    return jsonify(points)
+    GeoJSON = {
+        'type': 'FeatureCollection',
+        'id': 'beaches_default_layer',
+        'features': features
+    }
+
+    return jsonify(GeoJSON)
 
 
 def parse_polygon(x):
@@ -96,10 +106,10 @@ def parse_polygon(x):
             .replace('((', '')
             .replace('))', '')
             .split(','))
-            )]
+    )]
 
 
-@app.route('/get_polygons', methods=['GET'])
+@app.route('/api/get_polygons', methods=['GET'])
 def get_polygons():
 
     views_from_coast = db.engine.execute(
@@ -133,7 +143,7 @@ def get_polygons():
     return jsonify(coords)
 
 
-@app.route('/get_coastline', methods=['GET'])
+@app.route('/api/get_coastline', methods=['GET'])
 def get_coastline():
     coastlines = db.engine.execute(
         """
