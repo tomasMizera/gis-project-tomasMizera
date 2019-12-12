@@ -109,7 +109,7 @@ def parse_polygon(x):
     )]
 
 
-@app.route('/api/get_polygons', methods=['GET'])
+@app.route('/api/get_sight_views', methods=['GET'])
 def get_polygons():
 
     views_from_coast = db.engine.execute(
@@ -140,7 +140,15 @@ def get_polygons():
     )
     coords = [parse_polygon(co) for co in views_from_coast]
 
-    return jsonify(coords)
+    GeoJSON = {
+        'type': 'Feature',
+        'geometry': {
+            'type': 'MultiPolygon',
+            'coordinates': coords
+        }
+    }
+
+    return jsonify(GeoJSON)
 
 
 @app.route('/api/get_coastline', methods=['GET'])
