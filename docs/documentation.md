@@ -172,3 +172,25 @@ from beaches
 
 create index way_beach_index on spatial_coast using GIST(way);
 ```
+
+Finding intersections 
+
+```sql
+with megaline as (
+    with coastline as (
+        SELECT 'line' as type, *
+        from planet_osm_line
+        where "natural" = 'coastline'
+        UNION ALL
+        SELECT 'polygon' as type, *
+        from planet_osm_polygon
+        where "natural" = 'coastline'
+    )
+    select st_makeline(coast.way) as way
+    from coastline coast
+)
+select *
+from megaline me
+right join beach_view be on not st_intersects(me.way, be.way);
+-- > Ran out of memory :(
+```
