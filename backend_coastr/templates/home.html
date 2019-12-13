@@ -62,7 +62,7 @@
 
         // Update the current slider value (each time you drag the slider handle)
         slider.oninput = function () {
-            output.innerHTML = this.value / 400;
+            output.innerHTML = this.value / 400 + ' km';
         }
 
         mapboxgl.accessToken = 'pk.eyJ1IjoidG9tYXNtaXplcmEiLCJhIjoiY2syNjYwZWU4MDM1eTNqbWpzeHFtbndyeSJ9.jUjn1KiL9fLH3rm8cTOL3A';
@@ -75,10 +75,7 @@
 
         map.on('mousemove', function (e) {
             document.getElementById('mouse').innerHTML =
-                // e.point is the x, y coordinates of the mousemove event relative
-                // to the top-left corner of the map
                 JSON.stringify(e.point) + '<br />' +
-                // e.lngLat is the longitude, latitude geographical position of the event
                 JSON.stringify(e.lngLat.wrap());
         });
 
@@ -197,7 +194,7 @@
             if (event.target.checked) {
                 slider.disabled = false;
                 apply.disabled = false;
-                output.innerHTML = slider.value / 400;
+                output.innerHTML = slider.value / 400 + ' km';
                 if (map.getSource('intersections') == undefined) {
                     url = 'http://localhost:5000/api/get_intersections'
                     console.info('Fetching intersections')
