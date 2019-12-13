@@ -93,7 +93,7 @@ select name, osm_id, tags,
            st_point(longitude - 0.057635373, latitude - 0.02385071216053),
            st_point(longitude - 0.057635373, latitude + 0.02385071216053),
            st_point(longitude, latitude)
-           ]), 3857) as way
+           ]), 4326) as way
 ```
 
 Find intersection of views and coastline
@@ -112,7 +112,7 @@ create table spatial_coast (
     osm_id bigint,
     type varchar(15),
     tags hstore,
-    way geometry(Geometry, 3857)
+    way geometry(Geometry, 4326)
 );
 
 insert into spatial_coast (name, osm_id, type, tags, way)  (
@@ -140,40 +140,40 @@ create table beach_view (
     name text,
     osm_id bigint,
     tags hstore,
-    way geometry(Geometry, 3857)
+    way geometry(Geometry, 4326)
 );
 
-insert into beach_view (name, osm_id, tags, way)  (
+insert into beach_view (name, osm_id, tags, amenity, beach_pos, sight_way)   (
 with beaches as (
-    select name, osm_id, tags,
-           ST_X(st_astext(way)) as longitude,
-           ST_Y(st_astext(way)) as latitude
+    select name, osm_id, tags, amenity, st_transform(way, 4326) as way,
+           ST_X(st_astext(st_transform(way, 4326))) as longitude,
+           ST_Y(st_astext(st_transform(way, 4326))) as latitude
     from planet_osm_point
     where "natural" = 'beach'
     union all
-    select name, osm_id, tags,
-           st_x(st_astext(st_centroid(way)))
+    select name, osm_id, tags, amenity, st_transform(way, 4326) as way,
+           st_x(st_astext(st_centroid(st_transform(way, 4326))))
                as longitude,
-           st_y(st_astext(st_centroid(way)))
+           st_y(st_astext(st_centroid(st_transform(way, 4326))))
                as latitude
     from planet_osm_polygon
     where "natural" = 'beach'
 )
 
-select name, osm_id, tags,
+select name, osm_id, tags, amenity, way as beach_pos,
        st_polygon(st_makeline(ARRAY [
            st_point(longitude, latitude),
            st_point(longitude - 0.057635373, latitude - 0.02385071216053),
            st_point(longitude - 0.057635373, latitude + 0.02385071216053),
            st_point(longitude, latitude)
-           ]), 3857) as way
+           ]), 4326) as sight_way
 from beaches
 );
 
 create index way_beach_index on spatial_coast using GIST(way);
 ```
 
-Finding intersections 
+**Finding intersections** 
 
 ```sql
 with megaline as (
@@ -193,4 +193,17 @@ select *
 from megaline me
 right join beach_view be on not st_intersects(me.way, be.way);
 -- > Ran out of memory :(
+```
+
+Working intersections
+```sql
+with intersecting as (
+    select distinct beach.osm_id
+    from beach_view beach
+    cross join spatial_coast coast
+    where st_intersects(beach.way, coast.way)
+)
+select st_asgeojson(beach.way)
+from beach_view beach
+where beach.osm_id not in (select * from intersecting);
 ```

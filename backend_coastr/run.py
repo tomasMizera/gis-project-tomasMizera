@@ -1,6 +1,7 @@
 import logging
 from logging.config import dictConfig
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
+from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy
 import json
 
@@ -53,6 +54,20 @@ app = create_app()
 
 # ROUTES ----------------------------->
 
+def build_geojson_feature_c(_response, _layer_id):
+    elements = [json.loads(res[0]) for res in _response]
+
+    GeoJSON = {
+        'id': _layer_id,
+        'type': 'FeatureCollection',
+        'features': list(map(lambda x: {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': x
+        }, elements))
+    }
+    return GeoJSON
+
 
 @app.route('/', methods=['GET'])
 def hello_world():
@@ -62,42 +77,14 @@ def hello_world():
 
 @app.route('/api/get_beaches', methods=['GET'])
 def get_beaches():
-
     beaches = db.engine.execute(
         """
-        with beaches as (
-            select name, ST_X(st_astext(st_transform(way, 4326))) as longitude,
-                ST_Y(st_astext(st_transform(way, 4326))) as latitude
-            from planet_osm_point
-            where "natural" = 'beach'
-            union all
-            select name, st_x(st_astext(st_centroid(st_transform(way, 4326)))) as longitude,
-                st_y(st_astext(st_centroid(st_transform(way, 4326)))) as latitude
-            from planet_osm_polygon
-            where "natural" = 'beach'
-        )
-
-        select *
-        from beaches;
+        select st_asgeojson(beach_pos)
+        from beach_view;
         """
     )
 
-    features = [
-        {'type': 'Feature',
-         'properties': {},
-         'geometry': {
-             'type': "Point",
-             'coordinates': [beach[1], beach[2]]
-         }} for beach in beaches
-    ]
-
-    GeoJSON = {
-        'type': 'FeatureCollection',
-        'id': 'beaches_default_layer',
-        'features': features
-    }
-
-    return jsonify(GeoJSON)
+    return jsonify(build_geojson_feature_c(beaches, 'beaches'))
 
 
 def parse_polygon(x):
@@ -156,30 +143,30 @@ def get_polygons():
 def get_coastline():
     coastlines = db.engine.execute(
         """
-        with coastline as (
-            SELECT 'line' as type, *
-            from planet_osm_line
-            where "natural" = 'coastline'
-            UNION ALL
-            SELECT 'polygon' as type, *
-            from planet_osm_polygon
-            where "natural" = 'coastline'
-        )
-        select st_asgeojson(st_transform(coastline.way, 4326))
-        from coastline;
+        select st_asgeojson(st_transform(spatial_coast.way, 4326))
+        from spatial_coast;
         """
     )
 
-    elements = [json.loads(res[0]) for res in coastlines]
+    return jsonify(build_geojson_feature_c(coastlines, 'coastline'))
 
-    GeoJSON = {
-        'id': 'coastline',
-        'type': 'FeatureCollection',
-        'features': list(map(lambda x: {
-            'type': 'Feature',
-            'properties': {},
-            'geometry': x
-        }, elements))
-    }
 
-    return jsonify(GeoJSON)
+@app.route('/api/get_intersections', methods=['GET'])
+def get_test():
+
+    willing_walking = request.args.get('walking_distance', 0.05)
+
+    q = text("""with intersecting as (
+        select distinct beach.osm_id
+        from beach_view beach
+        cross join spatial_coast coast
+        where st_intersects(beach.sight_way, coast.way) and
+            st_maxdistance(beach.beach_pos, coast.way) > :walking_distance
+    )
+    select st_asgeojson(beach.sight_way)
+    from beach_view beach
+    where beach.osm_id not in (select * from intersecting);""")
+
+    intersected_views = db.engine.execute(q, walking_distance=willing_walking)
+
+    return jsonify(build_geojson_feature_c(intersected_views, 'intersections'))
