@@ -17,215 +17,53 @@
 
 </head>
 
-<body>
+<body class="body">
 
     <div id='map' style='width: 100%; height: 80%;'></div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-sm">
-                <div id='filters'>
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="sights_visible">
-                        <label class="custom-control-label" for="sights_visible">Show sights from beaches</label>
-                    </div>
+    <div id="after-map">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    <div id='filters'>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="sights_visible">
+                            <label class="custom-control-label" for="sights_visible">Show sights from beaches</label>
+                        </div>
 
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="show_coastline">
-                        <label class="custom-control-label" for="show_coastline">Show coastline</label>
-                    </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="show_coastline">
+                            <label class="custom-control-label" for="show_coastline">Show coastline</label>
+                        </div>
 
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="show-intersections">
-                        <label class="custom-control-label" for="show-intersections">Show intersections</label>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="show-intersections">
+                            <label class="custom-control-label" for="show-intersections">Show intersections</label>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-sm">
-                <div class="slidecontainer">
-                    <p>How far are you willing to walk?</p>
-                    <input type="range" min="0" max="100" value="20" class="slider" id="walk-range" disabled>
+                <div class="col-sm">
+                    <div class="slidecontainer">
+                        <p>How far are you willing to walk?</p>
+                        <input type="range" min="0" max="100" value="20" class="slider" id="walk-range" disabled>
+                    </div>
+                    <span id="slider-val"></span>
                 </div>
-                <span id="slider-val"></span>
+                <button id="apply-filters" type="button" class="btn btn-info" disabled>Apply filters</button>
             </div>
-            <button id="apply-filters" type="button" class="btn btn-info" disabled>Apply filters</button>
+        </div>
+
+        <div id='footer' class="float-right">
+            <span id='author'>Tomas Mizera</span>
+            <a href="https://github.com/fiit-pdt-2019/gis-project-tomasMizera" class="badge badge-warning">GitHub</a>
+        </div>
+
+        <div id="debug" class="fixed-bottom">
+            <span id="mouse"></span>
         </div>
     </div>
 
-    <span id="mouse"></span>
-
-    <script>
-        var slider = document.getElementById("walk-range");
-        var apply = document.getElementById("apply-filters");
-        var output = document.getElementById("slider-val");
-        output.innerHTML = "allow intersections";
-
-        // Update the current slider value (each time you drag the slider handle)
-        slider.oninput = function () {
-            output.innerHTML = this.value / 400 + ' km';
-        }
-
-        mapboxgl.accessToken = 'pk.eyJ1IjoidG9tYXNtaXplcmEiLCJhIjoiY2syNjYwZWU4MDM1eTNqbWpzeHFtbndyeSJ9.jUjn1KiL9fLH3rm8cTOL3A';
-        var map = new mapboxgl.Map({
-            container: 'map',
-            zoom: 6,
-            center: [16.040558978480476, 44.856239137871034],
-            style: 'mapbox://styles/tomasmizera/ck26ikzn01ubj1cpo9aq9k537'
-        });
-
-        map.on('mousemove', function (e) {
-            document.getElementById('mouse').innerHTML =
-                JSON.stringify(e.point) + '<br />' +
-                JSON.stringify(e.lngLat.wrap());
-        });
-
-
-        map.on("load", function () {
-            // Add zoom and rotation controls to the map.
-            // map.addControl(new mapboxgl.NavigationControl());
-            $("slider-val").text("0.05")
-            let url = 'http://localhost:5000/api/get_beaches';
-            $.get(url, (data, status) => {
-
-                map.loadImage("https://img.icons8.com/android/24/000000/beach.png", function (error, image) {
-                    if (error) throw error;
-                    map.addImage("beaches", image);
-
-                    /* Style layer: A style layer ties together the source and image and specifies how they are displayed on the map. */
-                    map.addLayer({
-                        id: "beaches",
-                        type: "symbol",
-                        /* Source: A data source specifies the geographic coordinate where the image marker gets placed. */
-                        source: {
-                            type: "geojson",
-                            data: data
-                        },
-                        layout: {
-                            "icon-image": "beaches",
-                        }
-                    });
-                });
-            });
-        });
-
-        $('#sights_visible').change((event) => {
-            if (event.target.checked) {
-                if (map.getSource('sights') == undefined) {
-                    url = 'http://localhost:5000/api/get_sight_views'
-                    $.get(url, (data, status) => {
-                        map.addLayer({
-                            'id': "sights",
-                            'type': "fill",
-                            'source': {
-                                'type': 'geojson',
-                                'data': data
-                            },
-                            'paint': {
-                                'fill-color': '#880',
-                                'fill-opacity': 0.5
-                            }
-                        }, "beaches")
-                    });
-                } else {
-                    map.setLayoutProperty('sights', 'visibility', 'visible');
-                }
-            } else {
-                map.setLayoutProperty('sights', 'visibility', 'none');
-            }
-        });
-
-        $('#show_coastline').change((event) => {
-            if (event.target.checked) {
-                if (map.getSource('coastline') == undefined) {
-                    url = 'http://localhost:5000/api/get_coastline'
-                    console.info('Fetching coastlines')
-                    $.get(url, (data, status) => {
-                        console.info('Coastlines fetched');
-                        map.addLayer({
-                            'id': "coastline",
-                            'type': "line",
-                            'source': {
-                                'type': 'geojson',
-                                'data': data
-                            },
-                            'layout': {
-                                'line-join': 'round',
-                                'line-cap': 'round'
-                            },
-                            'paint': {
-                                'line-color': '#088',
-                                'line-width': 7
-                            }
-                        }, "beaches")
-                    });
-                } else {
-                    map.setLayoutProperty('coastline', 'visibility', 'visible');
-                }
-            } else {
-                map.setLayoutProperty('coastline', 'visibility', 'none');
-            }
-        });
-
-        $('#apply-filters').click(() => {
-            if (!!map.getLayer('intersections')) {
-                map.removeLayer('intersections')
-                map.removeSource('intersections')
-            }
-            url = 'http://localhost:5000/api/get_intersections'
-            console.info('Fetching intersections')
-            $.get(url, { walking_distance: slider.value / 400 }, (data, status) => {
-                console.info('intersections fetched');
-                map.addLayer({
-                    'id': "intersections",
-                    'type': "fill",
-                    'source': {
-                        'type': 'geojson',
-                        'data': data
-                    },
-                    'paint': {
-                        'fill-color': '#808',
-                        'fill-opacity': 0.5
-                    }
-                })
-            });
-        })
-
-        $('#show-intersections').change((event) => {
-            if (event.target.checked) {
-                slider.disabled = false;
-                apply.disabled = false;
-                output.innerHTML = slider.value / 400 + ' km';
-                if (map.getSource('intersections') == undefined) {
-                    url = 'http://localhost:5000/api/get_intersections'
-                    console.info('Fetching intersections')
-                    $.get(url, { walking_distance: slider.value / 400 }, (data, status) => {
-                        console.info('intersections fetched');
-                        map.addLayer({
-                            'id': "intersections",
-                            'type': "fill",
-                            'source': {
-                                'type': 'geojson',
-                                'data': data
-                            },
-                            'paint': {
-                                'fill-color': '#808',
-                                'fill-opacity': 0.5
-                            }
-                        })
-                    });
-                } else {
-                    map.setLayoutProperty('intersections', 'visibility', 'visible');
-                }
-            } else {
-                slider.disabled = true;
-                output.innerHTML = 'allow intersections'
-                apply.disabled = true;
-                map.setLayoutProperty('intersections', 'visibility', 'none');
-            }
-        });
-    </script>
-
-    <!-- <script type="text/javascript" src="{{ url_for('static', filename='scripts/conf.js') }}"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/main.js') }}"></script>
 </body>
 
 </html>

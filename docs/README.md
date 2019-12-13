@@ -22,6 +22,6 @@ Fill in (either in English, or in Slovak): **Coastr**
 
 **Application description**: `Find places on coast where you can enjoy sunset on open sea`
 
-**Data source**: `<fill in>`
+**Data source**: `open street maps`
 
-**Technologies used**: `<fill in>`
+**Technologies used**: `Python, Flask, Mapbox, Jquery`

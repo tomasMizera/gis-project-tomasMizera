@@ -9,21 +9,21 @@
 - *we don't really care about the document length*
 - *uses links where appropriate*
 
+![Motivation](idea.jpg)
+
 # Coastr
 
+This application works with beaches in Croatia. Original idea was to show only beaches where you can enjoy sunset while looking at open water view. What was done:
+- defining view from beaches
+- counting intersection with coastline
+- show beaches on map
+- filter walking distance in order to see open view
 
+It looks like this:
 
-This application shows hotels in Bratislava on a map. Most important features are:
-- search by proximity to my current location
-- search by hotel name
-- intelligent ordering - by proximity and by hotel features
-- hotels on the map are color coded by their quality assigned in stars (standard)
+![Screenshot](showcase.png)
 
-This is it in action:
-
-![Screenshot](screenshot.png)
-
-The application has 2 separate parts, the client which is a [frontend web application](#frontend) using mapbox API and mapbox.js and the [backend application](#backend) written in [Rails](http://rubyonrails.org/), backed by PostGIS. The frontend application communicates with backend using a [REST API](#api) using GeoJSON.
+The application has 2 separate parts, the client which is a [frontend web application](#frontend) using mapbox API and mapbox gl js and the [backend application](#backend) written in [Python Flask](https://www.palletsprojects.com/p/flask/), backed by PostGIS. The frontend application communicates with backend using a [REST API](#api) using GeoJSON.
 
 # Frontend
 
