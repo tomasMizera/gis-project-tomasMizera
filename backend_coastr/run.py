@@ -79,12 +79,23 @@ def hello_world():
 def get_beaches():
     beaches = db.engine.execute(
         """
-        select st_asgeojson(beach_pos)
+        select name, st_asgeojson(beach_pos)
         from beach_view;
         """
     )
 
-    return jsonify(build_geojson_feature_c(beaches, 'beaches'))
+    elements = [(res[0], json.loads(res[1])) for res in beaches]
+
+    GeoJSON = {
+        'id': "beaches",
+        'type': 'FeatureCollection',
+        'features': list(map(lambda x: {
+            'type': 'Feature',
+            'properties': {'name': x[0]},
+            'geometry': x[1]
+        }, elements))
+    }
+    return jsonify(GeoJSON)
 
 
 def parse_polygon(x):
@@ -156,7 +167,8 @@ def get_test():
 
     willing_walking = request.args.get('walking_distance', 0.05)
 
-    q = text("""with intersecting as (
+    q = text("""
+    with intersecting as (
         select distinct beach.osm_id
         from beach_view beach
         cross join spatial_coast coast

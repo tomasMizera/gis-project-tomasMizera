@@ -3,29 +3,32 @@
     height: 80%;
 }
 
-/* #legend {
-    display: flex;
-    padding-left: 20px; */
-/* } */
-
-/* #filters {
-    width: 70%;
-} */
-
-/* #apply-button {
-    flex-grow: ;
+#debug {
+    padding-bottom: 10px;
+    padding-left: 10px;
 }
 
-#mouse {
-    flex-grow: 1;
-} */
+.body {
+    background-color: rgb(235, 235, 235);
+}
+
+div#after-map {
+    padding-top: 10px;
+}
+
+div#footer {
+    padding-top: 40px;
+    padding-right: 20px;
+}
+
+.mapboxgl-popup {
+    max-width: 400px;
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
 
 .slidecontainer {
     width: 100%;
-    /* Width of the outside container */
 }
-
-/* The slider itself */
 
 .slider {
     -webkit-appearance: none;
@@ -63,7 +66,7 @@
     /* Set a specific slider handle width */
     height: 25px;
     /* Slider handle height */
-    background: #4CAF50;
+    background: rgb(32, 59, 33);
     /* Green background */
     cursor: pointer;
     /* Cursor on hover */
